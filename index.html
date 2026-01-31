@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>with.you.silently</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body{
+margin:0;
+font-family:sans-serif;
+background:linear-gradient(145deg,#0f172a,#1e293b);
+color:white;
+text-align:center;
+padding-top:50px;
+}
+
+.nav button{
+margin:6px;padding:10px 16px;border:none;border-radius:20px;
+background:#2d3748;color:white;font-size:14px;
+}
+
+.page{display:none;padding-top:30px}
+#home{display:block}
+
+.glass{
+background:rgba(255,255,255,0.06);
+backdrop-filter:blur(12px);
+padding:18px;margin:20px auto;border-radius:25px;max-width:650px;
+}
+
+.moodRow{display:flex;justify-content:center;gap:6px;overflow-x:auto}
+.moodBtn{padding:7px 10px;border-radius:12px;border:none;background:white;color:black;font-size:13px}
+
+.bigBtn{padding:14px 20px;border-radius:30px;background:#1e293b;border:2px solid #4b5563;color:white}
+
+.orb{
+width:150px;height:150px;border-radius:50%;
+margin:20px auto;
+background:radial-gradient(circle,rgba(255,255,255,.4),rgba(255,255,255,.05));
+animation:breathe 8s infinite;
+}
+@keyframes breathe{0%{transform:scale(1)}50%{transform:scale(1.6)}100%{transform:scale(1)}}
+
+.calendar-day{
+display:inline-block;width:30px;height:30px;line-height:30px;
+border-radius:50%;margin:3px;background:#334155;font-size:12px;
+}
+.checked{background:white;color:black}
+
+textarea{
+width:90%;height:120px;border-radius:10px;
+background:#1e293b;color:white;padding:10px;border:none
+}
+
+/*  VISITORS PANEL LOWER */
+.footerCounter{
+position:fixed;
+bottom:20%;
+left:50%;
+transform:translateX(-50%);
+background:rgba(255,255,255,0.05);
+padding:10px 22px;
+border-radius:30px;
+backdrop-filter:blur(12px);
+font-size:14px;
+}
+.likeBtn{margin-left:12px;background:#334155;border:none;border-radius:20px;padding:5px 12px;color:white}
+</style>
+</head>
+
+<body>
+
+<div class="nav">
+<button onclick="showPage('home')">Home</button>
+<button onclick="showPage('calm')">Calm</button>
+<button onclick="showPage('calmMusic')">Calm Music</button>
+<button onclick="showPage('tracker')">Tracker</button>
+<button onclick="showPage('calendar')">Calendar</button>
+<button onclick="showPage('journal')">Let It Out</button>
+</div>
+
+<h1>with.you.silently </h1>
+<p>Heartfelt support, no therapy</p>
+
+<!-- HOME -->
+<div id="home" class="page">
+<div class="moodRow">
+<button class="moodBtn" onclick="setMood('sad',1)">Sad</button>
+<button class="moodBtn" onclick="setMood('anxious',2)">Anxious</button>
+<button class="moodBtn" onclick="setMood('overwhelmed',3)">Overwhelmed</button>
+<button class="moodBtn" onclick="setMood('heartbroken',2)">Heartbroken</button>
+<button class="moodBtn" onclick="setMood('tired',1)">Tired</button>
+</div>
+<div id="msg" class="glass" style="display:none"></div>
+</div>
+
+<!-- CALM -->
+<div id="calm" class="page">
+<h3>Calm Space</h3>
+<div class="orb"></div>
+<button class="bigBtn" onclick="toggleCalm()"> Play Calm Voice</button>
+<audio id="calmAudio" src="calmmusic.mp3" loop></audio>
+</div>
+
+<!-- CALM MUSIC -->
+<div id="calmMusic" class="page">
+<h3>Calm Music Library </h3>
+<script>
+for(let i=1;i<=10;i++){
+document.write(`<div class="glass"><p>Calm Music ${i}</p><audio controls src="episode${i}.mp3"></audio></div>`);
+}
+</script>
+</div>
+
+<!-- TRACKER -->
+<div id="tracker" class="page">
+<h3>Mood Tracker</h3>
+<canvas id="moodChart"></canvas>
+</div>
+
+<!-- CALENDAR -->
+<div id="calendar" class="page">
+<h3 id="calendarTitle"></h3>
+<div id="calendarGrid"></div>
+</div>
+
+<!-- JOURNAL -->
+<div id="journal" class="page">
+<h3>Let It Out </h3>
+<textarea id="journalBox"></textarea>
+</div>
+
+<div class="footerCounter"> Visitors: <span id="visitCount"></span>
+<button class="likeBtn" onclick="likePage()"> <span id="likeCount"></span></button></div>
+
+<script>
+function showPage(p){document.querySelectorAll(".page").forEach(x=>x.style.display="none");document.getElementById(p).style.display="block";}
+function toggleCalm(){let a=document.getElementById("calmAudio");a.paused?a.play():a.pause();}
+
+document.addEventListener("play",e=>{
+if(e.target.tagName==="AUDIO"){
+document.querySelectorAll("audio").forEach(a=>{if(a!==e.target){a.pause();a.currentTime=0;}});
+}},true);
+
+const messages={sad:["It's okay to cry.","Your feelings are real.","Even heavy hearts deserve rest.","Sadness does not make you weak.","You are allowed to feel this fully.","Some days are for surviving.","Your tears are healing.","You’re not broken.","Today can be slow.","You are still worthy.","No need to rush healing.","Your feelings make sense.","Softness is strength.","You’re not alone.","Pain is not permanent.","You are more than this mood.","Breathe through it.","Storms pass.","You matter deeply.","Be gentle with yourself."],
+anxious:["Breathe slowly.","You are safe right now.","This feeling will pass.","Take one small step.","Your thoughts are not facts.","Ground yourself.","Your breath is your anchor.","You are doing your best.","Slow is okay.","Nothing is required now.","Let your body settle.","Panic fades.","Feel your feet on the floor.","You can handle this.","Your nervous system can calm.","Pause.","You are not alone.","This wave will fall.","Stay present.","You are okay."],
+overwhelmed:["You don’t have to do everything now.","One step is enough.","Pause without guilt.","You’re carrying a lot.","It’s okay to slow down.","Break it small.","You deserve rest.","Not everything is urgent.","You can set things down.","Your limits matter.","Breathe.","Step away.","Your well-being first.","Small progress counts.","You are not failing.","Your effort is enough.","Surviving is strength.","Let the noise quiet.","You don’t have to hold all.","You are doing enough."],
+heartbroken:["Your love was real.","It hurts because it mattered.","Healing takes time.","You can grieve.","Your heart is tender not ruined.","Loss changes us.","It’s okay to miss them.","Your memories matter.","You loved bravely.","Pain shows depth.","Time softens ache.","You are still whole.","Your future holds love.","Grief is love displaced.","You deserve peace.","Not a broken future.","Be patient with your heart.","Warmth will return.","You are not alone.","Your heart can heal."],
+tired:["Rest is not laziness.","You deserve to pause.","Your body needs care.","Slowing down heals.","It’s okay to do less.","Strong people get tired.","You don’t need to push.","Energy returns.","Recharge.","Sleep is self-care.","Gentle pace.","Exhaustion is valid.","Not everything today.","Recovery takes time.","Your body asks care.","You are not behind.","Soft days matter.","Listen to limits.","Tomorrow is new.","Rest is productive."]};
+
+let moodData=JSON.parse(localStorage.getItem("moodHistory"))||[];
+const chart=new Chart(document.getElementById("moodChart"),{type:'line',data:{labels:moodData.map(()=>""),datasets:[{data:moodData,borderColor:'#fff'}]}});
+
+function setMood(m,val){
+msg.style.display="block";
+msg.innerText=messages[m][Math.floor(Math.random()*20)];
+moodData.push(val);
+localStorage.setItem("moodHistory",JSON.stringify(moodData));
+chart.update();
+saveCalendar();
+}
+
+journalBox.value=localStorage.getItem("journal")||"";
+journalBox.oninput=()=>localStorage.setItem("journal",journalBox.value);
+
+function renderCalendar(){
+const now=new Date(),year=now.getFullYear(),month=now.getMonth();
+calendarTitle.innerText=(month+1)+"/"+year;
+let days=JSON.parse(localStorage.getItem("moodDays"))||[];
+calendarGrid.innerHTML="";
+for(let i=1;i<=new Date(year,month+1,0).getDate();i++){
+let d=document.createElement("div");
+d.className="calendar-day";
+d.innerText=i;
+let dateObj=new Date(year,month,i).toISOString().slice(0,10);
+if(days.includes(dateObj)) d.classList.add("checked");
+calendarGrid.appendChild(d);
+}
+}
+function saveCalendar(){
+let today=new Date().toISOString().slice(0,10);
+let days=JSON.parse(localStorage.getItem("moodDays"))||[];
+if(!days.includes(today)) days.push(today);
+localStorage.setItem("moodDays",JSON.stringify(days));
+renderCalendar();
+}
+renderCalendar();
+
+let v=parseInt(localStorage.getItem("visitCount")||"0")+1;
+localStorage.setItem("visitCount",v);
+visitCount.innerText=v;
+
+let l=parseInt(localStorage.getItem("likeCount")||"0");
+likeCount.innerText=l;
+function likePage(){l++;localStorage.setItem("likeCount",l);likeCount.innerText=l;}
+</script>
+
+</body>
+</html>
